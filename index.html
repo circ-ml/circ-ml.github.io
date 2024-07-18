@@ -179,10 +179,16 @@ function submit() {
                     if (matchingEntry) {
                         const mean = Number(matchingEntry.Mean);
                         const variance = Number(matchingEntry.Variance);
-                        const ptile = jStat.normal.cdf(Number(value), mean, Math.sqrt(variance));
+                        nvalue = Number(value);
+                        if (metric === "SAT" || metric === "VAT" || metric === "IMAT") {
+                            nvalue = Math.log(nvalue)
+                        }
+
+                        const zs = (nvalue - mean) / Math.sqrt(variance);
+                        const ptile = jStat.normal.cdf(zs, 0, 1);
 
                         // Create a result string
-                        const resultString = `${structure} - ${metric}: Value = ${value}, Mean = ${mean.toFixed(2)}, Variance = ${variance.toFixed(2)}, Percentile = ${(ptile * 100).toFixed(2)}%`;
+                        const resultString = `${structure} - ${metric}: Percentile = ${(ptile * 100).toFixed(2)}%`;
                         
                         // Create a new paragraph element for this result
                         const resultElement = document.createElement('p');
