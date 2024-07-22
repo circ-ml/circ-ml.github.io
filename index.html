@@ -62,11 +62,11 @@
                 <option value="L3 Area">L3 Area</option>
             </select>
             <select name="metric" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="SAT">SAT (L/dm3)</option>
-                <option value="VAT">VAT (L/dm3)</option>
-                <option value="Muscle">SM (L/dm3)</option>
+                <option value="SAT">SAT (L)</option>
+                <option value="VAT">VAT (L)</option>
+                <option value="Muscle">SM (L)</option>
                 <option value="SMFF">SMFF (%)</option>
-                <option value="IMAT">IMAT (L/dm3)</option>
+                <option value="IMAT">IMAT (dL)</option>
             </select>
             <input type="number" name="metric-value" placeholder="Value" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button type="button" class="remove-input bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition duration-300">Remove</button>
@@ -104,11 +104,11 @@ function updateMetrics(selectElement) {
             {value: 'IMAT', text: 'IMAT (cm2)'}
           ]
         : [
-            {value: 'SAT', text: 'SAT (L/dm3)'},
-            {value: 'VAT', text: 'VAT (L/dm3)'},
-            {value: 'Muscle', text: 'SM (L/dm3)'},
+            {value: 'SAT', text: 'SAT (L)'},
+            {value: 'VAT', text: 'VAT (L)'},
+            {value: 'Muscle', text: 'SM (L)'},
             {value: 'SMFF', text: 'SMFF (%)'},
-            {value: 'IMAT', text: 'IMAT (L/dm3)'}
+            {value: 'IMAT', text: 'IMAT (dL)'}
           ];
     
     metrics.forEach(metric => {
@@ -121,107 +121,6 @@ function updateMetrics(selectElement) {
 
 // submit the form and calculate results
 function submit() {
-    // collect values
-    const ageInput = document.querySelector('input[name="age"]').value;
-    const sex = document.querySelector('select[name="sex"]').value;
-    const heightInput = document.querySelector('input[name="height"]').value;
-
-    const age = Math.round(Number(ageInput));
-    const height = Number(heightInput).toFixed(2);
-    
-    // validate inputs
-    if (!ageInput || !sex || !heightInput) {
-        alert("Age, sex, and height must be provided.");
-        return;
-    }
-    if (isNaN(age) || age < 20 || age > 83) {
-        alert("Age must be between 20 and 83 inclusive.");
-        return;
-    }
-    if (isNaN(height) || height < 1.40 || height > 2.08) {
-        alert("Height must be between 1.40 and 2.08 meters inclusive.");
-        return;
-    }
-    
-    const measurements = [];
-    const metricSelects = document.querySelectorAll('select[name="metric"]');
-    metricSelects.forEach(select => {
-        const metricValue = select.nextElementSibling.value;
-        if (metricValue) { // check if a measurement value is provided
-            const metricName = select.options[select.selectedIndex].text;
-            measurements.push(`${metricName}: ${metricValue}`);
-        }
-    });
-    
-    if (measurements.length === 0) {
-        alert("At least one measurement must be provided.");
-        return;
-    }
-    
-    document.getElementById('results').innerHTML = ''; // clear previous results
-    
-    // read csv
-    Papa.parse(`data/${age}.csv`, {
-        download: true,
-        header: true,
-        encoding: 'UTF-8',
-        complete: function(results) {
-            const data = results.data;
-            
-            const measurementInputs = document.querySelectorAll('.measurement-input-group');
-            measurementInputs.forEach(input => {
-                const structure = input.querySelector('select[name="structure"]').value;
-                const metric = input.querySelector('select[name="metric"]').value;
-                const value = input.querySelector('input[name="metric-value"]').value;
-
-                if (value) {
-                    // search for corresponding vals in csv
-                    const matchingEntry = data.find(entry => 
-                        entry.Measure === metric &&
-                        entry.Structure === structure &&
-                        entry.Sex === (sex === 'm' ? 'male' : 'female') &&
-                        Number(entry.Age) === age &&
-                        Math.abs(Number(entry.Height) - Number(height)) < 0.01
-                    );
-
-                    if (matchingEntry) {
-                        // get mean and variance
-                        const mean = Number(matchingEntry.Mean);
-                        const variance = Number(matchingEntry.Variance);
-
-                        // log-transform when necessary
-                        let nvalue = Number(value);
-                        if (metric === "SAT" || metric === "VAT" || metric === "IMAT") {
-                            nvalue = Math.log(nvalue);
-                        }
-
-                        // z-score and percentile
-                        const zs = (nvalue - mean) / Math.sqrt(variance);
-                        const ptile = jStat.normal.cdf(zs, 0, 1);
-
-                        // create and display result
-                        const resultElement = document.createElement('div');
-                        resultElement.className = 'bg-gray-50 p-4 rounded-md';
-                        resultElement.innerHTML = `
-                            <h3 class="font-semibold text-lg mb-2">${structure} - ${metric}</h3>
-                            <p><span class="font-medium">Z-Score:</span> ${zs.toFixed(2)}</p>
-                            <p><span class="font-medium">Percentile:</span> ${(ptile * 100).toFixed(2)}%</p>
-                        `;
-                        
-                        document.getElementById('results').appendChild(resultElement);
-
-                        console.log(`${structure} - ${metric}: Pred Mean = ${mean.toFixed(2)}, Z-Score = ${zs.toFixed(2)}, Percentile = ${(ptile * 100).toFixed(2)}%`);
-                    } else {
-                        // no matching element :( (for thorax + vat combo)
-                        const noMatchElement = document.createElement('div');
-                        noMatchElement.className = 'bg-red-50 p-4 rounded-md text-red-700';
-                        noMatchElement.textContent = `No matching entry found for ${structure} - ${metric}`;
-                        document.getElementById('results').appendChild(noMatchElement);
-                        console.log(`No matching entry found for ${structure} - ${metric}`);
-                    }
-                }
-            });
-        }
-    });
+    alert('Tool will be available upon review');
 }
 </script>
